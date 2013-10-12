@@ -104,7 +104,7 @@ generate_handle_match_pattern(Terms) ->
     Tmp1 = generate_term_representation(Terms),
     case string:right(Tmp1,3) of
         ",*]" -> string:left(Tmp1, string:len(Tmp1)-3) ++ "|_]";
-        "[*]" -> "[_|_]";
+        "[*]" -> "Anything";
         _ -> Tmp1
     end.
 
