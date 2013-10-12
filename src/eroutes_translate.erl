@@ -85,7 +85,7 @@ sure_type(Term,Type,Msg) -> case typeof(Term) of Type -> ok; WrongType -> throw(
 generate_header(ModuleName) ->
     [
         "-module("++atom_to_list(ModuleName)++").",
-        "-export([handle/2,create/2])."
+        "-export([handle/1,handle/2,create/2])."
       ].
 
 %% Handle
