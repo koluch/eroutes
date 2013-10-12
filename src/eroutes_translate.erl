@@ -91,11 +91,12 @@ generate_header(ModuleName) ->
 %% Handle
 generate_handle_forms(Routes) ->
     Result = [generate_handler_form(Rule) || Rule <- Routes],
-    [string:join(Result, ";\n") ++ "."].
+    SingleArgVariant = "handle(Path) -> handle(Path, []).",
+    [SingleArgVariant,string:join(Result, ";\n") ++ "."].
 
 generate_handler_form(_Route = {_RouteName,PathDef,MFA}) ->
     string:join(eroutes_misc:filter_empty_strings([
-        "\nhandle(" ++ generate_handle_match_pattern(PathDef) ++ ", Request) -> ",
+        "\nhandle(" ++ generate_handle_match_pattern(PathDef) ++ ", Params) -> ",
         generate_req_calls(MFA),
         generate_handle_call(MFA)
     ]), "\n    ").
@@ -124,7 +125,7 @@ generate_req_calls(_MFA = {_Module,_Function,Arguments}) ->
         end
     end, Arguments),
     ToStrings = [{atom_to_list(X),string:substr(atom_to_list(X),5)} || X <- OnlyReq],
-    ProplistGetValue = [first_upper(Full) ++ " = proplists:get_value(" ++ Cut ++ ", Request)," || {Full,Cut} <- ToStrings],
+    ProplistGetValue = [first_upper(Full) ++ " = proplists:get_value(" ++ Cut ++ ", Params)," || {Full,Cut} <- ToStrings],
     string:join(ProplistGetValue, "\n    ").
 
 
