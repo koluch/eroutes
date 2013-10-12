@@ -19,7 +19,7 @@ file_to_memory(SourceFile, ModuleName) ->
     {ok, [Routes]} = file:consult(SourceFile),
     Forms = eroutes_translate:rules_to_erl(Routes,ModuleName),
     eroutes_translate:compile_forms(ModuleName,Forms),
-    {ok, ModuleName}.
+    ModuleName.
 
 %% @doc Read routes file and generate corresponding erlang module file
 -spec file_to_file(SourceFile::string(),ModuleName::atom(),OutputFile::string()) -> ok | terminates.
