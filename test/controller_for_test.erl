@@ -27,7 +27,7 @@
 -export([all_posts/2, show_post/1, show_comment/2, show_404/0]).
 
 all_posts (Req_method,Req_body) ->   not_implemented.
-show_post (Number) -> "Content of post #" ++ integer_to_list(Number).
+show_post (Number) -> "Content of post #" ++ atom_to_list(Number).
 show_comment(Post,Comment) -> "Content of comment #" ++ integer_to_list(Comment) ++ " for post #" ++ integer_to_list(Post).
 show_404() -> "Page 404 content".
      

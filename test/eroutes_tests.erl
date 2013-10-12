@@ -1,6 +1,27 @@
+%% -*- coding: utf-8; erlang-indent-level: 4; indent-tabs-mode: nil -*-
+%%--------------------------------------------------------------------
 %% @author Nikolay Mavrenkov <koluch@koluch.ru>
-%% @copyright 2008 Nikolay Mavrenkov
-
+%% @copyright (C) 2013, Nikolay Mavrenkov
+%% @doc
+%%
+%% @end
+%%--------------------------------------------------------------------
+%% Copyright 2013 Nikolay Mavrenkov
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%% http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%--------------------------------------------------------------------
+%% Created : 13 Oct 2013 by Nikolay Mavrenkov <koluch@koluch.ru>
+%%--------------------------------------------------------------------
 -module(eroutes_tests).
 -author("Nikolay Mavrenkov <koluch@koluch.ru>").
 
@@ -10,10 +31,10 @@ compile_to_memory_test() ->
     ?assertEqual(test_routes_module, eroutes:file_to_memory("../priv/routes.test", test_routes_module)),
 
     %% Handle
-    ?assertEqual("Content of post #42", test_routes_module:handle([posts,42])),
-    ?assertEqual("Content of comment #13 for post #42", test_routes_module:handle([posts,42,comments,13],mock)),
-    ?assertEqual("Page 404 content", test_routes_module:handle([something],mock)),
-    ?assertEqual("Page 404 content", test_routes_module:handle([],mock)),
+    ?assertEqual("Content of post #42", test_routes_module:handle("/posts/42/")),
+    ?assertEqual("Content of comment #13 for post #42", test_routes_module:handle_atoms([posts,42,comments,13])),
+    ?assertEqual("Page 404 content", test_routes_module:handle_atoms([something])),
+    ?assertEqual("Page 404 content", test_routes_module:handle_atoms([])),
 
     %% Create
     ?assertEqual("/posts/42/comments/666", test_routes_module:create(comment, [{post, 42}, {comment, 666}])).

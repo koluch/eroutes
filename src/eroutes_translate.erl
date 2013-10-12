@@ -1,6 +1,27 @@
+%% -*- coding: utf-8; erlang-indent-level: 4; indent-tabs-mode: nil -*-
+%%--------------------------------------------------------------------
 %% @author Nikolay Mavrenkov <koluch@koluch.ru>
-%% @copyright 2008 Nikolay Mavrenkov
-
+%% @copyright (C) 2013, Nikolay Mavrenkov
+%% @doc
+%%
+%% @end
+%%--------------------------------------------------------------------
+%% Copyright 2013 Nikolay Mavrenkov
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%% http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%--------------------------------------------------------------------
+%% Created : 13 Oct 2013 by Nikolay Mavrenkov <koluch@koluch.ru>
+%%--------------------------------------------------------------------
 -module(eroutes_translate).
 -author("Nikolay Mavrenkov <koluch@koluch.ru>").
 
@@ -85,18 +106,22 @@ sure_type(Term,Type,Msg) -> case typeof(Term) of Type -> ok; WrongType -> throw(
 generate_header(ModuleName) ->
     [
         "-module("++atom_to_list(ModuleName)++").",
-        "-export([handle/1,handle/2,create/2])."
+        "-export([handle/1,handle/2,handle_atoms/1,handle_atoms/2,create/2])."
       ].
 
 %% Handle
 generate_handle_forms(Routes) ->
     Result = [generate_handler_form(Rule) || Rule <- Routes],
-    SingleArgVariant = "handle(Path) -> handle(Path, []).",
-    [SingleArgVariant,string:join(Result, ";\n") ++ "."].
+    [
+     "handle(Path) -> handle(Path, []).",
+     "handle(Path,Params) -> handle_atoms([list_to_atom(X) || X <- string:tokens(Path, \"/\")], Params).",
+     "handle_atoms(Atoms) -> handle_atoms(Atoms, []).",
+     string:join(Result, ";\n") ++ "."
+    ].
 
 generate_handler_form(_Route = {_RouteName,PathDef,MFA}) ->
     string:join(eroutes_misc:filter_empty_strings([
-        "\nhandle(" ++ generate_handle_match_pattern(PathDef) ++ ", Params) -> ",
+        "\nhandle_atoms(" ++ generate_handle_match_pattern(PathDef) ++ ", Params) -> ",
         generate_req_calls(MFA),
         generate_handle_call(MFA)
     ]), "\n    ").
