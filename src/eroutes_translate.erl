@@ -106,7 +106,7 @@ sure_type(Term,Type,Msg) -> case typeof(Term) of Type -> ok; WrongType -> throw(
 generate_header(ModuleName) ->
     [
         "-module("++atom_to_list(ModuleName)++").",
-        "-export([handle/1,handle/2,handle_atoms/1,handle_atoms/2,create/2])."
+        "-export([handle/1,handle/2,handle_parts/1,handle_parts/2,create/2])."
       ].
 
 %% Handle
@@ -114,23 +114,23 @@ generate_handle_forms(Routes) ->
     Result = [generate_handler_form(Rule) || Rule <- Routes],
     [
      "handle(Path) -> handle(Path, []).",
-     "handle(Path,Params) -> handle_atoms([list_to_atom(X) || X <- string:tokens(Path, \"/\")], Params).",
-     "handle_atoms(Atoms) -> handle_atoms(Atoms, []).",
+     "handle(Path,Params) -> handle_parts(string:tokens(Path, \"/\"), Params).",
+     "handle_parts(Parts) -> handle_parts(Parts, []).",
      string:join(Result, ";\n") ++ "."
     ].
 
 generate_handler_form(_Route = {_RouteName,PathDef,MFA}) ->
     string:join(eroutes_misc:filter_empty_strings([
-        "\nhandle_atoms(" ++ generate_handle_match_pattern(PathDef) ++ ", Params) -> ",
+        "\nhandle_parts(" ++ generate_handle_match_pattern(PathDef) ++ ", Params) -> ",
         generate_req_calls(MFA),
         generate_handle_call(MFA)
     ]), "\n    ").
 
 generate_handle_match_pattern(Terms) ->
     Tmp1 = generate_term_representation(Terms),
-    case string:right(Tmp1,3) of
-        ",*]" -> string:left(Tmp1, string:len(Tmp1)-3) ++ "|_]";
-        "[*]" -> "Anything";
+    case string:right(Tmp1,5) of
+        ",\"*\"]" -> string:left(Tmp1, string:len(Tmp1)-5) ++ "|_]";
+        "[\"*\"]" -> "Anything";
         _ -> Tmp1
     end.
 
@@ -218,7 +218,7 @@ generate_term_representation(Term) ->
     case typeof(Term) of
         atom -> first_upper(atom_to_list(Term));
         list -> case is_string(Term) of
-                    true -> Term;
+                    true -> "\""++Term++"\"";
                     _ -> SubTerms = [generate_term_representation(Next) || Next <- Term],
                         lists:append(["[",string:join(SubTerms,","),"]"])
                 end;

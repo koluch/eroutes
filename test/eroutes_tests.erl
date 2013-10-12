@@ -32,9 +32,10 @@ compile_to_memory_test() ->
 
     %% Handle
     ?assertEqual("Content of post #42", test_routes_module:handle("/posts/42/")),
-    ?assertEqual("Content of comment #13 for post #42", test_routes_module:handle_atoms([posts,42,comments,13])),
-    ?assertEqual("Page 404 content", test_routes_module:handle_atoms([something])),
-    ?assertEqual("Page 404 content", test_routes_module:handle_atoms([])),
+    ?assertEqual("Content of comment #13 for post #42", test_routes_module:handle("/posts/42/comments/13")),
+    ?assertEqual("Page 404 content", test_routes_module:handle("something")),
+    ?assertEqual("Page 404 content", test_routes_module:handle("")),
+    ?assertEqual("Posts index", test_routes_module:handle("/posts/some/another/path")),
 
     %% Create
     ?assertEqual("/posts/42/comments/666", test_routes_module:create(comment, [{post, 42}, {comment, 666}])).
