@@ -35,7 +35,7 @@ compile_to_memory_test() ->
     ?assertEqual("Content of comment #13 for post #42", test_routes_module:handle("/posts/42/comments/13")),
     ?assertEqual("Page 404 content", test_routes_module:handle("something")),
     ?assertEqual("Page 404 content", test_routes_module:handle("")),
-    ?assertEqual("Posts index", test_routes_module:handle("/posts/some/another/path")),
+    ?assertEqual("Posts index", test_routes_module:handle("/posts/some/another/path", ["It is context"])),
 
     %% Create
     ?assertEqual("/posts/42/comments/666", test_routes_module:create(comment, [{post, 42}, {comment, 666}])).

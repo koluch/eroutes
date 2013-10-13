@@ -3,6 +3,7 @@
 all: compile
 
 clean:
+	rm erl_crash.dump -f
 	rebar clean
 
 compile: clean

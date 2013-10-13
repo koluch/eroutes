@@ -113,15 +113,15 @@ generate_header(ModuleName) ->
 generate_handle_forms(Routes) ->
     Result = [generate_handler_form(Rule) || Rule <- Routes],
     [
-     "handle(Path) -> handle(Path, []).",
-     "handle(Path,Params) -> handle_parts(string:tokens(Path, \"/\"), Params).",
+     "handle(Path) -> handle_parts(string:tokens(Path, \"/\"), []).",
+     "handle(Path,Context) -> handle_parts(string:tokens(Path, \"/\"), [Context]).",
      "handle_parts(Parts) -> handle_parts(Parts, []).",
      string:join(Result, ";\n") ++ "."
     ].
 
 generate_handler_form(_Route = {_RouteName,PathDef,MFA}) ->
     string:join(eroutes_misc:filter_empty_strings([
-        "\nhandle_parts(" ++ generate_handle_match_pattern(PathDef) ++ ", Params) -> ",
+        "\nhandle_parts(" ++ generate_handle_match_pattern(PathDef) ++ ", Args) -> ",
         generate_req_calls(MFA),
         generate_handle_call(MFA)
     ]), "\n    ").
@@ -136,7 +136,11 @@ generate_handle_match_pattern(Terms) ->
 
 generate_handle_call({Module,Function,Arguments}) ->
     PreparedArguments = lists:map(fun(Arg) -> generate_term_representation(Arg) end, Arguments),
-    atom_to_list(Module) ++ ":" ++ atom_to_list(Function) ++ "("++string:join(PreparedArguments, ", ")++")".
+    Args = case PreparedArguments of
+               [] -> "Args";
+               Else -> "["++string:join(Else, ", ")++"|Args]"
+           end,
+    "erlang:apply(" ++ atom_to_list(Module) ++ "," ++ atom_to_list(Function) ++ ", "++Args++")".
 
 generate_req_calls(_MFA = {_Module,_Function,Arguments}) ->
     OnlyReq = lists:filter(fun(Next) ->
@@ -150,7 +154,7 @@ generate_req_calls(_MFA = {_Module,_Function,Arguments}) ->
         end
     end, Arguments),
     ToStrings = [{atom_to_list(X),string:substr(atom_to_list(X),5)} || X <- OnlyReq],
-    ProplistGetValue = [first_upper(Full) ++ " = proplists:get_value(" ++ Cut ++ ", Params)," || {Full,Cut} <- ToStrings],
+    ProplistGetValue = [first_upper(Full) ++ " = proplists:get_value(" ++ Cut ++ ", Args)," || {Full,Cut} <- ToStrings],
     string:join(ProplistGetValue, "\n    ").
 
 

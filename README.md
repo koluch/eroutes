@@ -23,7 +23,8 @@ eroutes:file_to_memory("routes.test", routes_module_name)
 Than, you could use module ```routes_module_name``` as follows:
 
 ```erlang
-routes_module_name:handle([post,42], RequestObject); %% blog_controller:show_post(Number) would been called
+routes_module_name:handle("/post/42/"); %% blog_controller:show_post(Number) would been called
+routes_module_name:handle("/post/42/", RequestObject); %% blog_controller:show_post(Number, RequestObject) would been called
 routes_module_name:create(post, [{number,42}]); %% function returns "/posts/42"
 ```
 
@@ -38,13 +39,15 @@ will result in file ```routes_module_name.erl``` with content:
 -module(routes_module_name).
 -export([handle/2,create/2]).
 
-handle([posts], Request) -> 
+%% ....
+
+handle(["posts"], Args) -> 
     Req_method = proplists:get_value(method, Request),
     Req_body = proplists:get_value(body, Request),
-    blog_controller:all_posts(Req_method, Req_body);
+    erlang:apply(blog_controller,all_posts, [Req_method, Req_body|Args]);
 
-handle([posts,Number], Request) -> 
-    blog_controller:show_post(Number);
+handle(["posts",Number], Args) -> 
+    erlang:apply(blog_controller, show_post, [Number|Args]);
 
 %% ..... 
 
