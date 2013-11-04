@@ -1,7 +1,8 @@
 [
-    {posts,                ["posts"],                               {controller_for_test, all_posts,    ['REQUEST'] } },
-    {post,                 ["posts",number],                        {controller_for_test, show_post,    [number]}                  },
-    {comment,              ["posts",post,"comments",comment],       {controller_for_test, show_comment, [post,comment] }           },
-    {comment,              ["posts","*"],                           {controller_for_test, show_index,   [] }              },
-    {page404,              ["*"],                                   {controller_for_test, show_404,     [] }                       }
+    {posts,          post,    ["posts"],                               {controller_for_test, new_post,     ['REQUEST'] }              },
+    {posts,                   ["posts"],                               {controller_for_test, all_posts,    [] }                       },
+    {post,                    ["posts",number],                        {controller_for_test, show_post,    [number]}                  },
+    {comment,                 ["posts",post,"comments",comment],       {controller_for_test, show_comment, [post,comment] }           },
+    {comment,                 ["posts","*"],                           {controller_for_test, show_index,   [] }                       },
+    {page404,                 ["*"],                                   {controller_for_test, show_404,     [] }                       }
 ].

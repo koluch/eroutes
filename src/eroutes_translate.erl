@@ -57,14 +57,25 @@ check_format_rules_routes_each([Route|Rest]) ->
     check_format_rules_route_details(Route),
     check_format_rules_routes_each(Rest).
 
-check_format_rules_route_details({Name, Path, MFA}) ->
+
+check_format_rules_route_details({Name, Path, MFA}) -> check_format_rules_route_details({Name, any, Path, MFA});
+
+check_format_rules_route_details({Name, Method, Path, MFA}) ->
     check_format_rules_name(Name),
+    check_format_rules_method(Method),
     check_format_rules_path(Path),
     check_format_rules_mfa(MFA);
 
-check_format_rules_route_details(Else) -> throw({"Each route should have following format: {Name, Path, MFA}!", Else}).
+check_format_rules_route_details(Else) -> throw({"Each route should have following format: {Name, [Method], Path, MFA}!", Else}).
 
 check_format_rules_name(Name) -> sure_atom(Name, "Name should be an atom!").
+
+check_format_rules_method(post) -> ok;
+check_format_rules_method(get) -> ok;
+check_format_rules_method(put) -> ok;
+check_format_rules_method(head) -> ok;
+check_format_rules_method(any) -> ok;
+check_format_rules_method(Else) -> throw({"Name should be ony of following atoms: [get,post,put,head,any]",Else}).
 
 check_format_rules_path(Path) ->
     sure_list(Path, "Path should be a list!"),
@@ -96,9 +107,11 @@ check_format_rules_mfa(Else) -> throw({"Module call should have following wormat
 
 
 %% Type check utils
+
 sure_atom(Term,Msg) -> sure_type(Term,atom,Msg).
 sure_list(Term,Msg) -> sure_type(Term,list,Msg).
 sure_tuple(Term,Msg) -> sure_type(Term,tuple,Msg).
+
 sure_type(Term,Type,Msg) -> case typeof(Term) of Type -> ok; WrongType -> throw({Msg, {Term,WrongType}}) end.
 
 
@@ -106,25 +119,32 @@ sure_type(Term,Type,Msg) -> case typeof(Term) of Type -> ok; WrongType -> throw(
 generate_header(ModuleName) ->
     [
         "-module("++atom_to_list(ModuleName)++").",
-        "-export([handle/1,handle/2,handle_parts/1,handle_parts/2,create/2])."
+        "-export([handle/1,handle/2,handle/3,handle_parts/1,handle_parts/3,create/2])."
       ].
 
 %% Handle
 generate_handle_forms(Routes) ->
     Result = [generate_handler_form(Rule) || Rule <- Routes],
     [
-     "handle(Path) -> handle_parts(string:tokens(Path, \"/\"), []).",
-     "handle(Path,Context) -> handle_parts(string:tokens(Path, \"/\"), Context).",
-     "handle_parts(Parts) -> handle_parts(Parts, []).",
+     "handle(Path) -> handle(Path,any,[]).",
+     "handle(Path,Method) -> handle(Path,Method,[]).",
+     "handle(Path,Method,Context) -> handle_parts(string:tokens(Path, \"/\"), Method,Context).",
+     "handle_parts(Parts) -> handle_parts(Parts, any, []).",
      string:join(Result, ";\n") ++ "."
     ].
 
-generate_handler_form(_Route = {_RouteName,PathDef,MFA}) ->
+generate_handler_form(_Route = {RouteName,PathDef,MFA}) -> generate_handler_form({RouteName,any,PathDef,MFA});
+
+generate_handler_form(_Route = {_RouteName,Method,PathDef,MFA}) ->
     string:join(eroutes_misc:filter_empty_strings([
-        "\nhandle_parts(" ++ generate_handle_match_pattern(PathDef) ++ ", Context) -> ",
+        "\nhandle_parts( " ++ string:join([generate_handle_match_pattern(PathDef),generate_handle_method_pattern(Method)], ", ") ++ ", Context) -> ",
         generate_special_calls(MFA),
         generate_handle_call(MFA)
     ]), "\n    ").
+
+
+generate_handle_method_pattern(any) -> "_";
+generate_handle_method_pattern(Method) -> atom_to_list(Method).
 
 generate_handle_match_pattern(Terms) ->
     Tmp1 = generate_term_representation(Terms),
@@ -167,7 +187,9 @@ generate_create_forms(Routes) ->
     Result = [generate_create_form(Rule) || Rule <- Routes],
     [string:join(Result, ";\n") ++ "."].
 
-generate_create_form(_Rule = {RouteName,PathDef,_MFA}) ->
+generate_create_form(_Rule = {RouteName,PathDef,MFA}) -> generate_create_form({RouteName, any, PathDef,MFA});
+
+generate_create_form(_Rule = {RouteName,_Method,PathDef,_MFA}) ->
     "create("++atom_to_list(RouteName)++", Params) -> " ++ generate_create_body(PathDef).
 
 

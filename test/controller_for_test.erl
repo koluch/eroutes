@@ -24,9 +24,10 @@
 %%--------------------------------------------------------------------
 -module(controller_for_test).
 
--export([all_posts/1, show_post/1, show_comment/2, show_404/0, show_index/0]).
+-export([all_posts/0, new_post/1, show_post/1, show_comment/2, show_404/0, show_index/0]).
 
-all_posts (Request) -> "Value of p1 is " ++ proplists:get_value(p1, Request).
+all_posts () -> "All posts list".
+new_post (Request) -> "New post title: " ++ proplists:get_value(title, Request).
 show_index() -> "Posts index".
 show_post (Number) -> "Content of post #" ++ Number.
 show_comment(Post,Comment) -> "Content of comment #" ++ Comment ++ " for post #" ++ Post.
