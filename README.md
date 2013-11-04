@@ -8,10 +8,10 @@ Tool for handle url-routes in web applications
 For example, you have following routes:
 ```erlang
 [
-  {posts,   ["posts"],                         {controller, all_posts, [req_method,req_body]}},
-  {post,    ["posts",number],                  {controller, show_post, [number]}},
-  {comment, ["posts",post,"comments",comment], {controller, show_comment, [post,comment]}},
-  {page404, ["*"],                             {controller, show_404, []}}
+  {posts,   ["posts"],                {controller, all_posts, [req_method,req_body]}},
+  {post,    ["posts",number],         {controller, show_post, [number]}},
+  {comment, ["posts",p,"comments",c], {controller, show_comment, [p,c]}},
+  {page404, ["*"],                    {controller, show_404, []}}
 ].
 ```
 
