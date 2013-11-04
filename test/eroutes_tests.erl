@@ -28,6 +28,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 compile_to_memory_test() ->
+%    ?assertEqual(ok, eroutes:file_to_file("../priv/routes.test", test_routes_module, "../tmp.erl")),
     ?assertEqual({ok, test_routes_module}, eroutes:file_to_memory("../priv/routes.test", test_routes_module)),
 
     %% Handle
@@ -36,6 +37,10 @@ compile_to_memory_test() ->
     ?assertEqual("Page 404 content", test_routes_module:handle("something")),
     ?assertEqual("Page 404 content", test_routes_module:handle("")),
     ?assertEqual("Posts index", test_routes_module:handle("/posts/some/another/path", ["It is context"])),
+
+    %% Handle with context
+    Context = [{'REQUEST', [{p1,"v1"}]}],
+    ?assertEqual("Value of p1 is v1", test_routes_module:handle("/posts/", Context)),
 
     %% Create
     ?assertEqual("/posts/42/comments/666", test_routes_module:create(comment, [{post, 42}, {comment, 666}])).

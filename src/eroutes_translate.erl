@@ -114,15 +114,15 @@ generate_handle_forms(Routes) ->
     Result = [generate_handler_form(Rule) || Rule <- Routes],
     [
      "handle(Path) -> handle_parts(string:tokens(Path, \"/\"), []).",
-     "handle(Path,Context) -> handle_parts(string:tokens(Path, \"/\"), [Context]).",
+     "handle(Path,Context) -> handle_parts(string:tokens(Path, \"/\"), Context).",
      "handle_parts(Parts) -> handle_parts(Parts, []).",
      string:join(Result, ";\n") ++ "."
     ].
 
 generate_handler_form(_Route = {_RouteName,PathDef,MFA}) ->
     string:join(eroutes_misc:filter_empty_strings([
-        "\nhandle_parts(" ++ generate_handle_match_pattern(PathDef) ++ ", Args) -> ",
-        generate_req_calls(MFA),
+        "\nhandle_parts(" ++ generate_handle_match_pattern(PathDef) ++ ", Context) -> ",
+        generate_special_calls(MFA),
         generate_handle_call(MFA)
     ]), "\n    ").
 
@@ -136,25 +136,25 @@ generate_handle_match_pattern(Terms) ->
 
 generate_handle_call({Module,Function,Arguments}) ->
     PreparedArguments = lists:map(fun(Arg) -> generate_term_representation(Arg) end, Arguments),
-    Args = case PreparedArguments of
-               [] -> "Args";
-               Else -> "["++string:join(Else, ", ")++"|Args]"
+    Context = case PreparedArguments of
+               [] -> "[]";
+               Else -> "["++string:join(Else, ", ")++"]"
            end,
-    "erlang:apply(" ++ atom_to_list(Module) ++ "," ++ atom_to_list(Function) ++ ", "++Args++")".
+    "erlang:apply(" ++ atom_to_list(Module) ++ "," ++ atom_to_list(Function) ++ ", "++Context++")".
 
-generate_req_calls(_MFA = {_Module,_Function,Arguments}) ->
+generate_special_calls(_MFA = {_Module,_Function,Arguments}) ->
     OnlyReq = lists:filter(fun(Next) ->
         case typeof(Next) of
             atom ->
-                case string:left(atom_to_list(Next),4) of
-                        "req_" -> true;
-                        _ -> false
-                    end;
+                case Next of
+                    'REQUEST' -> true;
+                    _ -> false
+                end;
             _ -> false
         end
     end, Arguments),
-    ToStrings = [{atom_to_list(X),string:substr(atom_to_list(X),5)} || X <- OnlyReq],
-    ProplistGetValue = [first_upper(Full) ++ " = proplists:get_value(" ++ Cut ++ ", Args)," || {Full,Cut} <- ToStrings],
+    ToStrings = lists:map(fun (X) -> atom_to_list(X) end, OnlyReq),
+    ProplistGetValue = [first_upper(X) ++ " = proplists:get_value('" ++ X ++ "', Context)," || X <- ToStrings],
     string:join(ProplistGetValue, "\n    ").
 
 
