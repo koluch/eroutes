@@ -28,7 +28,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 compile_to_memory_test() ->
-    ?assertEqual(test_routes_module, eroutes:file_to_memory("../priv/routes.test", test_routes_module)),
+    ?assertEqual({ok, test_routes_module}, eroutes:file_to_memory("../priv/routes.test", test_routes_module)),
 
     %% Handle
     ?assertEqual("Content of post #42", test_routes_module:handle("/posts/42/")),

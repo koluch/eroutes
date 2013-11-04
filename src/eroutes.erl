@@ -37,17 +37,25 @@
 %% @doc Read routes file and load as erlang module to memory
 -spec file_to_memory(SourceFile::string(),ModuleName::atom()) -> {'ok', ModuleName::atom()} | terminates .
 file_to_memory(SourceFile, ModuleName) ->
-    {ok, [Routes]} = file:consult(SourceFile),
-    Forms = eroutes_translate:rules_to_erl(Routes,ModuleName),
-    eroutes_translate:compile_forms(ModuleName,Forms),
-    ModuleName.
+    try
+        {ok, [Routes]} = file:consult(SourceFile),
+        Forms = eroutes_translate:rules_to_erl(Routes,ModuleName),
+        eroutes_translate:compile_forms(ModuleName,Forms),
+        {ok, ModuleName}
+    catch
+        _:e -> {error, e}
+    end.
 
 %% @doc Read routes file and generate corresponding erlang module file
 -spec file_to_file(SourceFile::string(),ModuleName::atom(),OutputFile::string()) -> ok | terminates.
 file_to_file(SourceFile, ModuleName, OutputFile) ->
-    {ok, [Routes]} = file:consult(SourceFile),
-    Forms = eroutes_translate:rules_to_erl(Routes,ModuleName),
-    {ok, File} = file:open(OutputFile, [write]),
-    lists:map(fun(Line) -> file:write(File, Line), file:write(File, [$\n, $\n]) end, Forms),
-    file:close(File),
-    ok.
+    try
+        {ok, [Routes]} = file:consult(SourceFile),
+        Forms = eroutes_translate:rules_to_erl(Routes,ModuleName),
+        {ok, File} = file:open(OutputFile, [write]),
+        lists:map(fun(Line) -> file:write(File, Line), file:write(File, [$\n, $\n]) end, Forms),
+        file:close(File),
+        ok
+    catch
+        _:e -> {error, e}
+    end.

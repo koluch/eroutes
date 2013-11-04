@@ -26,8 +26,8 @@
 
 -export([all_posts/2, show_post/1, show_comment/2, show_404/0, show_index/1]).
 
-all_posts (Req_method,Req_body) ->   not_implemented.
-show_index(Context) -> "Posts index".
+all_posts (_Req_method,_Req_body) ->   not_implemented.
+show_index(_Context) -> "Posts index".
 show_post (Number) -> "Content of post #" ++ Number.
 show_comment(Post,Comment) -> "Content of comment #" ++ Comment ++ " for post #" ++ Post.
 show_404() -> "Page 404 content".
