@@ -43,7 +43,8 @@ file_to_memory(SourceFile, ModuleName) ->
         eroutes_translate:compile_forms(ModuleName,Forms),
         {ok, ModuleName}
     catch
-        _:e -> {error, e}
+        throw:E -> {error, E};
+        error:E -> {error, E}
     end.
 
 %% @doc Read routes file and generate corresponding erlang module file
