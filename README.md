@@ -8,10 +8,10 @@ Tool for handle url-routes in web applications
 For example, you have following routes:
 ```erlang
 [
-  {posts,   ["posts"],                {controller, all_posts, [req_method,req_body]}},
-  {post,    ["posts",number],         {controller, show_post, [number]}},
-  {comment, ["posts",p,"comments",c], {controller, show_comment, [p,c]}},
-  {page404, ["*"],                    {controller, show_404, []}}
+  {posts,   ["posts"],                {blog_controller, all_posts, [req_method,req_body]}},
+  {post,    ["posts",number],         {blog_controller, show_post, [number]}},
+  {comment, ["posts",p,"comments",c], {blog_controller, show_comment, [p,c]}},
+  {page404, ["*"],                    {blog_controller, show_404, []}}
 ].
 ```
 
@@ -23,8 +23,8 @@ eroutes:file_to_memory("routes.test", routes_module_name)
 Than, you could use module ```routes_module_name``` as follows:
 
 ```erlang
-routes_module_name:handle("/post/42/"); %% blog_controller:show_post(Number) would been called
-routes_module_name:handle("/post/42/", RequestObject); %% controller:show_post(Number, RequestObject) would been called
+routes_module_name:handle("/posts/42/"); %% blog_controller:show_post(Number) would been called
+routes_module_name:handle("/posts/42/", RequestObject); %% controller:show_post(Number, RequestObject) would been called
 routes_module_name:create(post, [{number,42}]); %% function returns "/posts/42"
 ```
 
